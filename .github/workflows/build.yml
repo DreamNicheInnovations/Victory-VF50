@@ -1,0 +1,190 @@
+name: Victory VF50 Multi-Platform Build & Validate
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  build-windows:
+    name: Windows x64 (VST3, CLAP, Standalone + Multi-Out)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build
+          -G "Visual Studio 17 2022" -A x64
+          -DVF50_DEPLOY_LOCAL=OFF
+
+      - name: Build Release targets
+        run: >
+          cmake --build build --config Release
+          --target VictoryVF50_VST3 VictoryVF50_CLAP VictoryVF50_Standalone
+          VictoryVF50_Multi_VST3 VictoryVF50_Multi_CLAP
+          VF50_HeadlessTest VF50_HeadlessTest_Multi
+          --parallel
+
+      - name: Run VF50_HeadlessTest & VF50_HeadlessTest_Multi
+        shell: cmd
+        run: |
+          .\build\VF50_HeadlessTest_artefacts\Release\VF50_HeadlessTest.exe || exit /b 1
+          .\build\VF50_HeadlessTest_Multi_artefacts\Release\VF50_HeadlessTest_Multi.exe || exit /b 1
+
+      - name: Download pluginval v1.0.4
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path tools/pluginval | Out-Null
+          curl.exe -fsSL -o tools/pluginval/pluginval_Windows.zip https://github.com/Tracktion/pluginval/releases/download/v1.0.4/pluginval_Windows.zip
+          Expand-Archive -Path tools/pluginval/pluginval_Windows.zip -DestinationPath tools/pluginval -Force
+
+      - name: Validate Victory VF50 & Victory VF50 Multi VST3 with pluginval (level 10)
+        shell: cmd
+        run: |
+          .\tools\pluginval\pluginval.exe --strictness-level 10 --timeout-ms 60000 --validate ".\build\VictoryVF50_artefacts\Release\VST3\Victory VF50.vst3" || exit /b 1
+          .\tools\pluginval\pluginval.exe --strictness-level 10 --timeout-ms 60000 --validate ".\build\VictoryVF50_Multi_artefacts\Release\VST3\Victory VF50 Multi.vst3" || exit /b 1
+
+      - name: Stage Windows artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/windows | Out-Null
+          Copy-Item -Recurse "build/VictoryVF50_artefacts/Release/VST3/Victory VF50.vst3" dist/windows/
+          Copy-Item "build/VictoryVF50_artefacts/Release/CLAP/Victory VF50.clap" dist/windows/
+          Copy-Item "build/VictoryVF50_artefacts/Release/Standalone/Victory VF50.exe" dist/windows/
+          Copy-Item -Recurse "build/VictoryVF50_Multi_artefacts/Release/VST3/Victory VF50 Multi.vst3" dist/windows/
+          Copy-Item "build/VictoryVF50_Multi_artefacts/Release/CLAP/Victory VF50 Multi.clap" dist/windows/
+          Copy-Item LICENSE README.md BUILDING.md dist/windows/
+          Compress-Archive -Path dist/windows/* -DestinationPath dist/Victory-VF50-Windows-x64.zip -Force
+
+      - name: Upload Windows release archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: Victory-VF50-Windows-x64
+          path: dist/Victory-VF50-Windows-x64.zip
+
+  build-macos:
+    name: macOS Universal (AU, VST3, CLAP, Standalone + Multi-Out)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          -DVF50_DEPLOY_LOCAL=OFF
+
+      - name: Build Release targets
+        run: >
+          cmake --build build --config Release
+          --target VictoryVF50_AU VictoryVF50_VST3 VictoryVF50_CLAP VictoryVF50_Standalone
+          VictoryVF50_Multi_AU VictoryVF50_Multi_VST3 VictoryVF50_Multi_CLAP
+          VF50_HeadlessTest VF50_HeadlessTest_Multi
+          --parallel
+
+      - name: Run VF50_HeadlessTest & VF50_HeadlessTest_Multi
+        run: |
+          ./build/VF50_HeadlessTest_artefacts/Release/VF50_HeadlessTest
+          ./build/VF50_HeadlessTest_Multi_artefacts/Release/VF50_HeadlessTest_Multi
+
+      - name: Download pluginval v1.0.4
+        run: |
+          mkdir -p tools/pluginval
+          curl -fsSL -o tools/pluginval/pluginval_macOS.zip https://github.com/Tracktion/pluginval/releases/download/v1.0.4/pluginval_macOS.zip
+          unzip -q tools/pluginval/pluginval_macOS.zip -d tools/pluginval
+
+      - name: Validate Victory VF50 & Victory VF50 Multi VST3 with pluginval (level 10)
+        run: |
+          ./tools/pluginval/pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --timeout-ms 60000 --validate "./build/VictoryVF50_artefacts/Release/VST3/Victory VF50.vst3"
+          ./tools/pluginval/pluginval.app/Contents/MacOS/pluginval --strictness-level 10 --timeout-ms 60000 --validate "./build/VictoryVF50_Multi_artefacts/Release/VST3/Victory VF50 Multi.vst3"
+
+      - name: Stage macOS artifacts
+        run: |
+          mkdir -p dist/macos
+          cp -R "build/VictoryVF50_artefacts/Release/AU/Victory VF50.component" dist/macos/
+          cp -R "build/VictoryVF50_artefacts/Release/VST3/Victory VF50.vst3" dist/macos/
+          cp -R "build/VictoryVF50_artefacts/Release/CLAP/Victory VF50.clap" dist/macos/
+          cp -R "build/VictoryVF50_artefacts/Release/Standalone/Victory VF50.app" dist/macos/
+          cp -R "build/VictoryVF50_Multi_artefacts/Release/AU/Victory VF50 Multi.component" dist/macos/
+          cp -R "build/VictoryVF50_Multi_artefacts/Release/VST3/Victory VF50 Multi.vst3" dist/macos/
+          cp -R "build/VictoryVF50_Multi_artefacts/Release/CLAP/Victory VF50 Multi.clap" dist/macos/
+          cp LICENSE README.md BUILDING.md dist/macos/
+          (cd dist/macos && zip -qry ../Victory-VF50-macOS-Universal.zip .)
+
+      - name: Upload macOS release archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: Victory-VF50-macOS-Universal
+          path: dist/Victory-VF50-macOS-Universal.zip
+
+  build-linux:
+    name: Linux x64 (VST3, LV2, CLAP, Standalone + Multi-Out)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux build and runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential cmake ninja-build git pkg-config \
+            libasound2-dev libjack-jackd2-dev ladspa-sdk \
+            libcurl4-openssl-dev libfreetype6-dev libx11-dev libxcomposite-dev \
+            libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev \
+            libgl1-mesa-dev libglu1-mesa-dev libfontconfig1-dev libxml2-utils xvfb
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DVF50_DEPLOY_LOCAL=OFF
+
+      - name: Build Release targets
+        run: >
+          cmake --build build --config Release
+          --target VictoryVF50_VST3 VictoryVF50_LV2 VictoryVF50_CLAP VictoryVF50_Standalone
+          VictoryVF50_Multi_VST3 VictoryVF50_Multi_LV2 VictoryVF50_Multi_CLAP
+          VF50_HeadlessTest VF50_HeadlessTest_Multi
+          --parallel
+
+      - name: Run VF50_HeadlessTest & VF50_HeadlessTest_Multi
+        run: |
+          xvfb-run -a ./build/VF50_HeadlessTest_artefacts/Release/VF50_HeadlessTest
+          xvfb-run -a ./build/VF50_HeadlessTest_Multi_artefacts/Release/VF50_HeadlessTest_Multi
+
+      - name: Download pluginval v1.0.4
+        run: |
+          mkdir -p tools/pluginval
+          curl -fsSL -o tools/pluginval/pluginval_Linux.zip https://github.com/Tracktion/pluginval/releases/download/v1.0.4/pluginval_Linux.zip
+          unzip -q tools/pluginval/pluginval_Linux.zip -d tools/pluginval
+          chmod +x tools/pluginval/pluginval
+
+      - name: Validate Victory VF50 & Victory VF50 Multi VST3 with pluginval (level 10)
+        run: |
+          xvfb-run -a ./tools/pluginval/pluginval --strictness-level 10 --timeout-ms 60000 --validate "./build/VictoryVF50_artefacts/Release/VST3/Victory VF50.vst3"
+          xvfb-run -a ./tools/pluginval/pluginval --strictness-level 10 --timeout-ms 60000 --validate "./build/VictoryVF50_Multi_artefacts/Release/VST3/Victory VF50 Multi.vst3"
+
+      - name: Stage Linux artifacts
+        run: |
+          mkdir -p dist/linux
+          cp -R "build/VictoryVF50_artefacts/Release/VST3/Victory VF50.vst3" dist/linux/
+          cp -R "build/VictoryVF50_artefacts/Release/LV2/Victory VF50.lv2" dist/linux/
+          cp "build/VictoryVF50_artefacts/Release/CLAP/Victory VF50.clap" dist/linux/
+          cp "build/VictoryVF50_artefacts/Release/Standalone/Victory VF50" dist/linux/
+          cp -R "build/VictoryVF50_Multi_artefacts/Release/VST3/Victory VF50 Multi.vst3" dist/linux/
+          cp -R "build/VictoryVF50_Multi_artefacts/Release/LV2/Victory VF50 Multi.lv2" dist/linux/
+          cp "build/VictoryVF50_Multi_artefacts/Release/CLAP/Victory VF50 Multi.clap" dist/linux/
+          cp LICENSE README.md BUILDING.md dist/linux/
+          (cd dist/linux && zip -qry ../Victory-VF50-Linux-x64.zip .)
+
+      - name: Upload Linux release archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: Victory-VF50-Linux-x64
+          path: dist/Victory-VF50-Linux-x64.zip

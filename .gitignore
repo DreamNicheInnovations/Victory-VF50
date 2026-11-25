@@ -1,0 +1,52 @@
+# Build artifacts & local tools
+/build/
+/tools/
+/Release_Package/
+
+# Compiled plugin bundles & executables
+*.vst3
+*.clap
+*.component
+*.lv2
+*.exe
+*.app
+*.dll
+*.so
+*.dylib
+*.pdb
+*.ilk
+*.lib
+*.exp
+*.a
+
+# User-supplied ROMs, disk images, audio renders & reference PDFs
+*.img
+*.IMG
+*.dsk
+*.DSK
+*.bin
+*.BIN
+*.rom
+*.ROM
+*.syx
+*.SYX
+*.wav
+*.pdf
+/ROM*/
+/*Floppy*/
+/Sound Banks/
+/UI References/
+/Reface-*/
+
+# IDE & OS metadata
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+CMakeUserPresets.json
+*.suo
+*.user
+*.sln
+*.vcxproj*
