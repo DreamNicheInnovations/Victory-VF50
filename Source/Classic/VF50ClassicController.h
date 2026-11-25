@@ -4,6 +4,7 @@
 #include "Disk/VF50DiskManager.h"
 #include "Plugin/PluginProcessor.h"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>

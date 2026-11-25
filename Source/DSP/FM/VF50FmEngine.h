@@ -5,6 +5,7 @@
 #include "ROM/VF50RomBank.h"
 #include "State/VF50ClassicSystemTypes.h"
 
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <cstddef>

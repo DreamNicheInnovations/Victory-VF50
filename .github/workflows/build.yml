@@ -5,6 +5,7 @@ on:
     branches: ["**"]
     tags: ["v*"]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build-windows:
@@ -54,7 +55,7 @@ jobs:
           Copy-Item "build/VictoryVF50_artefacts/Release/Standalone/Victory VF50.exe" dist/windows/
           Copy-Item -Recurse "build/VictoryVF50_Multi_artefacts/Release/VST3/Victory VF50 Multi.vst3" dist/windows/
           Copy-Item "build/VictoryVF50_Multi_artefacts/Release/CLAP/Victory VF50 Multi.clap" dist/windows/
-          Copy-Item LICENSE README.md BUILDING.md dist/windows/
+          Copy-Item -Path LICENSE, README.md, BUILDING.md -Destination dist/windows/
           Compress-Archive -Path dist/windows/* -DestinationPath dist/Victory-VF50-Windows-x64.zip -Force
 
       - name: Upload Windows release archive
@@ -122,7 +123,7 @@ jobs:
 
   build-linux:
     name: Linux x64 (VST3, LV2, CLAP, Standalone + Multi-Out)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -131,7 +132,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential cmake ninja-build git pkg-config \
+            build-essential cmake ninja-build git pkg-config zip unzip \
             libasound2-dev libjack-jackd2-dev ladspa-sdk \
             libcurl4-openssl-dev libfreetype6-dev libx11-dev libxcomposite-dev \
             libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev \

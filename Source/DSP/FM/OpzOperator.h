@@ -4,6 +4,7 @@
 #include "ROM/VF50DataTypes.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 

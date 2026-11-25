@@ -6,8 +6,10 @@
 
 #include <juce_core/juce_core.h>
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
