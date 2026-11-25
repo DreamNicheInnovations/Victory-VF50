@@ -83,7 +83,7 @@ void VF50MixerDrawer::MixerFaderLookAndFeel::drawLinearSlider(juce::Graphics& g,
         static_cast<float>(width), static_cast<float>(height));
 
     const uint32_t accentArgb = static_cast<uint32_t>(
-        static_cast<int64_t>(slider.getProperties().getWithDefault("mixAccent", static_cast<int64_t>(kColSoloTeal))));
+        static_cast<juce::int64>(slider.getProperties().getWithDefault("mixAccent", static_cast<juce::int64>(kColSoloTeal))));
     const juce::Colour accent(accentArgb);
 
     if (style == juce::Slider::LinearHorizontal) {
@@ -213,7 +213,7 @@ void VF50MixerDrawer::MixerFaderLookAndFeel::drawRotarySlider(juce::Graphics& g,
     const float cy = bounds.getCentreY();
 
     const uint32_t accentArgb = static_cast<uint32_t>(
-        static_cast<int64_t>(slider.getProperties().getWithDefault("mixAccent", static_cast<int64_t>(kColSoloTeal))));
+        static_cast<juce::int64>(slider.getProperties().getWithDefault("mixAccent", static_cast<juce::int64>(kColSoloTeal))));
     const bool isBipolar = static_cast<bool>(slider.getProperties().getWithDefault("mixBipolar", false));
     const bool dimmed    = static_cast<bool>(slider.getProperties().getWithDefault("mixDimmed", false));
     const juce::Colour accent = juce::Colour(accentArgb).withMultipliedAlpha(dimmed ? 0.35f : 1.0f);
@@ -637,7 +637,7 @@ std::unique_ptr<juce::Slider> VF50MixerDrawer::makeRotaryKnob(const juce::String
     k->setDoubleClickReturnValue(true, defaultV);
     k->setRotaryParameters(juce::MathConstants<float>::pi * 1.25f,
                            juce::MathConstants<float>::pi * 2.75f, true);
-    k->getProperties().set("mixAccent", static_cast<int64_t>(accentArgb));
+    k->getProperties().set("mixAccent", static_cast<juce::int64>(accentArgb));
     k->getProperties().set("mixBipolar", bipolar);
     k->getProperties().set("mixDimmed", false);
     addAndMakeVisible(*k);
@@ -746,7 +746,7 @@ void VF50MixerDrawer::buildControls() {
         st.fader->setRange(0.0, 99.0, 1.0);
         st.fader->setValue(99.0, juce::dontSendNotification);
         st.fader->setDoubleClickReturnValue(true, 99.0);
-        st.fader->getProperties().set("mixAccent", static_cast<int64_t>(kColSoloTeal));
+        st.fader->getProperties().set("mixAccent", static_cast<juce::int64>(kColSoloTeal));
         st.fader->onValueChange = [this, i]() {
             if (!suppressCallbacks_) {
                 (void)setInstVolumeFromMixer(i, static_cast<int>(std::lround(instStrips_[i].fader->getValue())));
@@ -829,7 +829,7 @@ void VF50MixerDrawer::buildControls() {
     rhyStrip_.fader->setRange(0.0, 99.0, 1.0);
     rhyStrip_.fader->setValue(85.0, juce::dontSendNotification);
     rhyStrip_.fader->setDoubleClickReturnValue(true, 85.0);
-    rhyStrip_.fader->getProperties().set("mixAccent", static_cast<int64_t>(kColSoloTeal));
+    rhyStrip_.fader->getProperties().set("mixAccent", static_cast<juce::int64>(kColSoloTeal));
     rhyStrip_.fader->onValueChange = [this]() {
         if (!suppressCallbacks_) {
             setRhythmVolumeFromMixer(static_cast<int>(std::lround(rhyStrip_.fader->getValue())));
@@ -865,7 +865,7 @@ void VF50MixerDrawer::buildControls() {
     masterStrip_.masterFader = std::make_unique<juce::Slider>(juce::Slider::LinearVertical, juce::Slider::NoTextBox);
     masterStrip_.masterFader->setLookAndFeel(&mixerLookAndFeel_);
     masterStrip_.masterFader->setDoubleClickReturnValue(true, 0.80);
-    masterStrip_.masterFader->getProperties().set("mixAccent", static_cast<int64_t>(tokens::kSilkWarmWhite));
+    masterStrip_.masterFader->getProperties().set("mixAccent", static_cast<juce::int64>(tokens::kSilkWarmWhite));
     addAndMakeVisible(*masterStrip_.masterFader);
     masterStrip_.masterAttach = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
         processor_.apvts(), "masterVolume", *masterStrip_.masterFader);
