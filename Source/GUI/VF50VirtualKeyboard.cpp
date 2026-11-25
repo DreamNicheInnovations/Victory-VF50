@@ -275,8 +275,7 @@ void VF50VirtualKeyboard::paint(juce::Graphics& g) {
         const int lowOct   = (lowNote / 12) - 2;  // Hardware C1 = 36 -> (3-2) = 1
         const int highOct  = (highNote / 12) - 2; // Hardware C6 = 96 -> (8-2) = 6
 
-        char rangeStr[32]{};
-        std::snprintf(rangeStr, sizeof(rangeStr), "61-KEY  [C%d - C%d]", lowOct, highOct);
+        const juce::String rangeStr = "61-KEY  [C" + juce::String(lowOct) + " - C" + juce::String(highOct) + "]";
         g.setColour(juce::Colour(tokens::kSilkWarmWhite));
         g.setFont(VF50LookAndFeel::makeFont(16.0f, true, 0.98f));
         g.drawText(rangeStr, 54, 34, 260, 24, juce::Justification::centred, false);
@@ -386,8 +385,7 @@ void VF50VirtualKeyboard::paint(juce::Graphics& g) {
         // C-Octave root legends (C1..C6) + optional Rhythm Mode drum index hint
         if ((midiNote % 12) == 0) {
             const int octNum = (midiNote / 12) - 2;
-            char cLbl[8]{};
-            std::snprintf(cLbl, sizeof(cLbl), "C%d", octNum);
+            const juce::String cLbl = "C" + juce::String(octNum);
             g.setColour(lit ? juce::Colour(0xFF0A2826u) : juce::Colour(0xFF565E68u));
             g.setFont(VF50LookAndFeel::makeFont(14.0f, true));
             g.drawText(cLbl,

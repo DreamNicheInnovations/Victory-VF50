@@ -6,6 +6,7 @@
 #include "DSP/VF50DemoSongPlayer.h"
 #include "ROM/VF50RomBank.h"
 
+#include <algorithm>
 #include <array>
 #include <atomic>
 #include <cmath>

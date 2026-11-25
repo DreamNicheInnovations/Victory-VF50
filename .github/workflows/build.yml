@@ -16,9 +16,7 @@ jobs:
 
       - name: Configure CMake
         run: >
-          cmake -S . -B build
-          -G "Visual Studio 17 2022" -A x64
-          -DVF50_DEPLOY_LOCAL=OFF
+          cmake -S . -B build -A x64 -DVF50_DEPLOY_LOCAL=OFF
 
       - name: Build Release targets
         run: >
